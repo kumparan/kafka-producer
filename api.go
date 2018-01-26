@@ -24,6 +24,13 @@ func registerServiceEndpoints(r *router.Router) {
 			httpresponse.BadRequest(w, err.Error())
 			return
 		}
-		kafka.Publish(message)
+		err = kafka.Publish(message)
+		if err != nil {
+			httpresponse.InternalServerError(w, err.Error())
+			return
+		}else{
+			httpresponse.StatusOk(w)
+			return
+		}
 	})
 }

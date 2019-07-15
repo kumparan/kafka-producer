@@ -43,7 +43,7 @@ func NewConsumerClient(brokerAddress string, fn ConsumerCallback) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"brokerAddress": brokerAddress,
-		}).Fatal(err)
+		}).Error(err)
 	}
 
 	log.WithFields(log.Fields{
@@ -124,7 +124,7 @@ func runConsumerGroup(topic string, provider sarama.ConsumerGroup, fn MessageCal
 		if err != nil {
 			log.WithFields(log.Fields{
 				"topics": topics,
-			}).Fatal(err)
+			}).Error(err)
 		}
 	}
 }

@@ -34,7 +34,7 @@ type (
 )
 
 // NewConsumerClient :nodoc:
-func NewConsumerClient(brokerAddress string, fn ConsumerCallback) {
+func NewConsumerClient(brokerAddress string, fn ConsumerCallback) error {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_1_0_0
 	config.Consumer.Return.Errors = true
@@ -44,6 +44,7 @@ func NewConsumerClient(brokerAddress string, fn ConsumerCallback) {
 		log.WithFields(log.Fields{
 			"brokerAddress": brokerAddress,
 		}).Error(err)
+		return err
 	}
 
 	log.WithFields(log.Fields{
@@ -57,6 +58,8 @@ func NewConsumerClient(brokerAddress string, fn ConsumerCallback) {
 
 	cons.SetClient(client)
 	cons.runCallback()
+
+	return nil
 }
 
 // SetClient :nodoc:

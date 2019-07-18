@@ -41,7 +41,7 @@ var defaultOptions = Options{
 }
 
 // NewProducer returns a new SyncProducer for give brokers addresses.
-func NewProducer(broker string, client string, fn ProducerCallback) {
+func NewProducer(broker string, client string, fn ProducerCallback) error {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_1_0_0
 	config.Producer.Return.Successes = true
@@ -51,7 +51,8 @@ func NewProducer(broker string, client string, fn ProducerCallback) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"brokerAddress": broker,
-		}).Fatal(err)
+		}).Error(err)
+		return err
 	}
 
 	kafkaProducer, err := sarama.NewSyncProducerFromClient(saramaClient)
@@ -60,6 +61,7 @@ func NewProducer(broker string, client string, fn ProducerCallback) {
 			"client":        client,
 			"brokerAddress": broker,
 		}).Error(err)
+		return err
 	}
 
 	log.WithFields(log.Fields{
@@ -74,6 +76,8 @@ func NewProducer(broker string, client string, fn ProducerCallback) {
 
 	prod.SetProducer(kafkaProducer)
 	prod.runCallback()
+
+	return nil
 }
 
 // SetProducer :nodoc:

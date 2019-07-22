@@ -143,6 +143,11 @@ func (cg ConsumerGroup) Cleanup(sarama.ConsumerGroupSession) error {
 }
 
 // ShutDown :nodoc:
-func (cg *ConsumerGroup) ShutDown() {
-	cg.Consumer.Close()
+func (cg *ConsumerGroup) ShutDown() error {
+	err := cg.Consumer.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

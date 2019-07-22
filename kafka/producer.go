@@ -144,8 +144,13 @@ func (p *Producer) SendMessage(topic string, message interface{}) error {
 }
 
 // ShutDown connection
-func (p *Producer) ShutDown() {
-	p.conn.Close()
+func (p *Producer) ShutDown() error {
+	err := p.conn.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *Producer) checkWorkerStatus() bool {

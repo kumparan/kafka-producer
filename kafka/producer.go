@@ -150,6 +150,11 @@ func (p *Producer) ShutDown() error {
 		return err
 	}
 
+	err = p.client.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

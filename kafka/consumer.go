@@ -14,8 +14,9 @@ type (
 
 	// Consumer :nodoc:
 	Consumer struct {
-		client sarama.Client
-		info   *consumerInfo
+		client        sarama.Client
+		info          *consumerInfo
+		consumerGroup sarama.ConsumerGroup
 	}
 
 	// consumerInfo contains informations that will be use info to kafka
@@ -25,7 +26,6 @@ type (
 
 	// ConsumerGroup :represents a Sarama consumer group consumer:
 	ConsumerGroup struct {
-		Consumer sarama.ConsumerGroup
 		callback MessageCallback
 	}
 
@@ -73,6 +73,21 @@ func (c *Consumer) runCallback() {
 	}
 }
 
+// ShutDown :nodoc:
+func (c *Consumer) ShutDown() error {
+	err := c.consumerGroup.Close()
+	if err != nil {
+		return err
+	}
+
+	err = c.client.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NewConsumerGroup runs the process of consuming. It is blocking.
 func (c *Consumer) NewConsumerGroup(consumerGroupName string, topic string, fn MessageCallback) error {
 	config := sarama.NewConfig()
@@ -85,7 +100,7 @@ func (c *Consumer) NewConsumerGroup(consumerGroupName string, topic string, fn M
 		log.WithFields(log.Fields{
 			"consumerGroupName": consumerGroupName,
 			"client":            c.client,
-		}).Fatal(err)
+		}).Error(err)
 	}
 
 	// Track errors
@@ -93,9 +108,10 @@ func (c *Consumer) NewConsumerGroup(consumerGroupName string, topic string, fn M
 		for err := range group.Errors() {
 			log.WithFields(log.Fields{
 				"consumerGroupName": consumerGroupName,
-			}).Fatal(err)
+			}).Error(err)
 		}
 	}()
+	c.consumerGroup = group
 
 	runConsumerGroup(topic, group, fn)
 	return nil
@@ -139,15 +155,5 @@ func (cg ConsumerGroup) Setup(sarama.ConsumerGroupSession) error {
 
 // Cleanup Consumergroup :nodoc:
 func (cg ConsumerGroup) Cleanup(sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-// ShutDown :nodoc:
-func (cg *ConsumerGroup) ShutDown() error {
-	err := cg.Consumer.Close()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
